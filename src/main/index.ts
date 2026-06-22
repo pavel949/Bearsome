@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
-import { join } from 'node:path'
-import { readFile, writeFile } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import AdmZip from 'adm-zip'
 import Store from 'electron-store'
 
 import { IPC } from '../shared/ipc'
@@ -11,6 +12,7 @@ import type {
   InstalledMod,
   IpcResult,
   ModUpdate,
+  MrpackImportResult,
   Pack,
   PackEntry,
   PackImportResult,
@@ -21,9 +23,12 @@ import * as modrinth from './modrinth'
 import {
   detectModsDir,
   downloadToMods,
+  downloadToPath,
   listJarFiles,
-  removeMod
+  removeMod,
+  safeResolve
 } from './minecraft'
+import { parseMrpackIndex } from './mrpack'
 import { buildAppMenu } from './menu'
 
 // ---------------------------------------------------------------------------
@@ -353,6 +358,60 @@ async function importPack(): Promise<PackImportResult> {
   return { installed, failed }
 }
 
+async function importMrpack(): Promise<MrpackImportResult> {
+  const open = await dialog.showOpenDialog(mainWindow!, {
+    title: 'Import Modrinth modpack',
+    filters: [{ name: 'Modrinth modpack', extensions: ['mrpack'] }],
+    properties: ['openFile']
+  })
+  if (open.canceled || open.filePaths.length === 0) {
+    return { name: '', installed: 0, failed: [] }
+  }
+
+  const zip = new AdmZip(open.filePaths[0])
+  const indexEntry = zip.getEntry('modrinth.index.json')
+  if (!indexEntry) throw new Error('That .mrpack has no modrinth.index.json.')
+  const index = parseMrpackIndex(zip.readAsText(indexEntry))
+
+  // Pack paths are relative to the Minecraft instance root, which contains the
+  // mods folder. Derive it from the configured mods directory.
+  const base = dirname(getSettings().modsDir)
+  let installed = 0
+  const failed: string[] = []
+
+  // 1) Managed downloads listed in the index.
+  for (const file of index.files) {
+    try {
+      const dest = safeResolve(base, file.path)
+      await downloadToPath(file.downloads[0], dest, (r, t) =>
+        emitProgress(file.path.split('/').pop() ?? file.path, r, t)
+      )
+      installed++
+    } catch {
+      failed.push(file.path)
+    }
+  }
+
+  // 2) `overrides/` (and client-overrides/) files bundled in the zip.
+  for (const entry of zip.getEntries()) {
+    const name = entry.entryName
+    const prefix = ['overrides/', 'client-overrides/'].find((p) => name.startsWith(p))
+    if (!prefix || entry.isDirectory) continue
+    const rel = name.slice(prefix.length)
+    if (!rel) continue
+    try {
+      const dest = safeResolve(base, rel)
+      await mkdir(dirname(dest), { recursive: true })
+      await writeFile(dest, entry.getData())
+      installed++
+    } catch {
+      failed.push(name)
+    }
+  }
+
+  return { name: index.name, installed, failed }
+}
+
 // ---------------------------------------------------------------------------
 // Register IPC handlers
 // ---------------------------------------------------------------------------
@@ -408,6 +467,7 @@ function registerIpc(): void {
   handle(IPC.updateMod, (filename) => updateMod(filename as string))
   handle(IPC.exportPack, () => exportPack())
   handle(IPC.importPack, () => importPack())
+  handle(IPC.importMrpack, () => importMrpack())
   handle(IPC.openModsDir, async () => {
     const { modsDir } = getSettings()
     await shell.openPath(modsDir)

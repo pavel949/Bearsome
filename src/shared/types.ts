@@ -173,5 +173,14 @@ export interface PackImportResult {
   failed: string[]
 }
 
+/** Outcome of importing a Modrinth `.mrpack` modpack. */
+export interface MrpackImportResult {
+  name: string
+  /** Number of files successfully written (mods, resource packs, shaders, …). */
+  installed: number
+  /** Paths of files that could not be downloaded. */
+  failed: string[]
+}
+
 /** Generic envelope so the renderer can render errors instead of crashing. */
 export type IpcResult<T> = { ok: true; data: T } | { ok: false; error: string }

@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { detectModsDir, listJarFiles, removeMod } from '../src/main/minecraft'
+import { detectModsDir, listJarFiles, removeMod, safeResolve } from '../src/main/minecraft'
 
 describe('detectModsDir', () => {
   it('returns a path ending in mods', () => {
@@ -64,6 +64,20 @@ describe('removeMod', () => {
     'rejects path traversal: %s',
     async (bad) => {
       await expect(removeMod(dir, bad)).rejects.toThrow('Invalid mod filename')
+    }
+  )
+})
+
+describe('safeResolve', () => {
+  it('resolves a normal nested path inside the base', () => {
+    const out = safeResolve('/games/instance', 'mods/sodium.jar')
+    expect(out).toBe('/games/instance/mods/sodium.jar')
+  })
+
+  it.each(['../escape.jar', 'mods/../../escape.jar', '/etc/passwd', '..\\..\\win.jar'])(
+    'rejects escaping path: %s',
+    (bad) => {
+      expect(() => safeResolve('/games/instance', bad)).toThrow('Unsafe path')
     }
   )
 })

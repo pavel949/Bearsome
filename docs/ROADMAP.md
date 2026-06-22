@@ -26,12 +26,16 @@ are grouped by horizon, not committed dates.
   belong to the same mod (a common crash cause) and flags them "duplicate"
 - ✅ **Multi-select bulk remove** — select rows and remove them in one action
 
+- ✅ **Modrinth `.mrpack` import** — install the standard Modrinth modpack
+  format (managed downloads + `overrides/`) into the instance, with
+  traversal-safe paths; mods, resource packs and shaders all land correctly
+
 ## Next (high value, self-contained)
 
 - **Optional dependencies prompt.** Today only *required* deps are auto-resolved;
   offer optional ones as opt-in checkboxes.
-- **Modrinth `.mrpack` support.** Read/write the standard Modrinth modpack
-  format in addition to Bearsome's own pack JSON.
+- **`.mrpack` export.** Write the standard format (needs per-file sha512/size)
+  alongside the existing Bearsome JSON pack and `.mrpack` import.
 
 ## Later (larger)
 

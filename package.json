@@ -19,9 +19,11 @@
     "package:dir": "electron-vite build && electron-builder --dir"
   },
   "dependencies": {
+    "adm-zip": "^0.5.17",
     "electron-store": "^8.2.0"
   },
   "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

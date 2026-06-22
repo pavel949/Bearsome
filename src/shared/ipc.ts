@@ -9,6 +9,7 @@ import type {
   InstalledMod,
   IpcResult,
   ModUpdate,
+  MrpackImportResult,
   PackImportResult,
   ProjectDetail,
   ProjectVersion,
@@ -33,6 +34,7 @@ export const IPC = {
   updateMod: 'mods:updateMod',
   exportPack: 'mods:exportPack',
   importPack: 'mods:importPack',
+  importMrpack: 'mods:importMrpack',
   openModsDir: 'mods:openModsDir',
   openExternal: 'shell:openExternal',
   getVersion: 'app:getVersion',
@@ -67,6 +69,8 @@ export interface BearsomeApi {
   exportPack(): Promise<IpcResult<string | null>>
   /** Pick a `.json` pack and install every mod in it. */
   importPack(): Promise<IpcResult<PackImportResult>>
+  /** Pick a Modrinth `.mrpack` modpack and install its contents. */
+  importMrpack(): Promise<IpcResult<MrpackImportResult>>
   openModsDir(): Promise<IpcResult<null>>
   openExternal(url: string): Promise<IpcResult<null>>
   /** The app's version string (from package.json). */

@@ -17,6 +17,7 @@ interface Props {
   onUpdateAll: () => void
   onExportPack: () => void
   onImportPack: () => void
+  onImportMrpack: () => void
   busyFilename: string | null
 }
 
@@ -35,6 +36,7 @@ export function Library({
   onUpdateAll,
   onExportPack,
   onImportPack,
+  onImportMrpack,
   busyFilename
 }: Props): JSX.Element {
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -76,6 +78,7 @@ export function Library({
           <button className="btn btn-ghost" onClick={onCheckUpdates} disabled={checking || mods.length === 0}>
             {checking ? 'Checking…' : 'Check for updates'}
           </button>
+          <button className="btn btn-ghost" onClick={onImportMrpack}>Import .mrpack</button>
           <button className="btn btn-ghost" onClick={onImportPack}>Import pack</button>
           <button className="btn btn-ghost" onClick={onExportPack} disabled={mods.length === 0}>
             Export pack

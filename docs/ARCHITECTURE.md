@@ -100,12 +100,18 @@ modules.
 - **`menu.ts`** — builds and installs the native application menu (File / Edit /
   View / Window / Help), including "Open mods folder", a Modrinth link, and an
   About dialog.
+- **`mrpack.ts`** — pure parser/validator for the Modrinth `.mrpack` index
+  (`parseMrpackIndex`); the ZIP reading + downloading orchestration lives in
+  `index.ts` (`importMrpack`).
 - **`minecraft.ts`** — filesystem layer (instance-agnostic; takes `modsDir`):
   - `detectModsDir()` — OS-specific default mods folder.
   - `listJarFiles()` — enumerate `.jar`s with size/mtime (tolerates a missing
     folder).
   - `downloadToMods()` — streams a URL to disk with progress via
     `Readable.fromWeb` + `stream/promises.pipeline`.
+  - `downloadToPath()` / `safeResolve()` — generic stream-download to an
+    absolute path, and a traversal-safe resolver used when writing files whose
+    paths come from untrusted sources (e.g. a `.mrpack` index).
   - `removeMod()` — deletes a single file, guarding against path traversal.
 
 ### `src/renderer/src`

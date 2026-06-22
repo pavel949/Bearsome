@@ -64,6 +64,10 @@ All disk access goes through `src/main/minecraft.ts`:
 - Writes only ever go **inside the configured `modsDir`** as `.jar` files.
 - `removeMod()` rejects filenames containing `/`, `\`, or `..` — no path
   traversal; deletions are limited to a single file in the mods folder.
+- `safeResolve()` validates every path that comes from an untrusted pack (a
+  `.mrpack` index or its `overrides/` entries) and refuses absolute paths or
+  `..` traversal, so an imported pack can only ever write *inside* the instance
+  directory.
 - The app never deletes anything the user didn't explicitly remove.
 - Downloads are streamed to the target path; a failed HTTP response throws
   before anything partial is treated as installed.

@@ -282,6 +282,18 @@ export default function App(): JSX.Element {
     }
   }, [flash, refreshLibrary])
 
+  const importMrpack = useCallback(async () => {
+    try {
+      const result = await unwrap(window.bearsome.importMrpack())
+      if (result.installed === 0 && result.failed.length === 0) return // cancelled
+      refreshLibrary()
+      const failNote = result.failed.length ? `, ${result.failed.length} failed` : ''
+      flash('ok', `Imported "${result.name}": ${result.installed} file${result.installed === 1 ? '' : 's'}${failNote}`)
+    } catch (e) {
+      flash('err', (e as Error).message)
+    }
+  }, [flash, refreshLibrary])
+
   // --- Settings mutations -------------------------------------------------
   const patchSettings = useCallback(
     async (patch: Partial<AppSettings>) => {
@@ -409,6 +421,7 @@ export default function App(): JSX.Element {
             onUpdateAll={updateAll}
             onExportPack={exportPack}
             onImportPack={importPack}
+            onImportMrpack={importMrpack}
             busyFilename={removingFile}
           />
         )}

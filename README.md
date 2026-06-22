@@ -21,6 +21,8 @@ your loader, and Bearsome downloads the mod straight into your Minecraft
   Modrinth and update them individually or all at once.
 - 🎒 **Modpack export/import** — save your whole library to a shareable `.json`
   pack and re-install it on another machine or instance.
+- 📥 **Modrinth `.mrpack` import** — install standard Modrinth modpacks (mods,
+  resource packs and shaders) straight into your instance.
 - ✅ **Installed-aware browsing** — search results and versions you already have
   are clearly flagged.
 - 🧹 **Conflict detection & bulk cleanup** — warns when two files belong to the

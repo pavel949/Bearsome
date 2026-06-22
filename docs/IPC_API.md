@@ -119,6 +119,14 @@ by its `versionId`. Returns `{ installed: InstalledMod[], failed: string[] }`
 (both empty if cancelled). A single failing entry is recorded in `failed` and
 does not abort the rest.
 
+### `importMrpack(): Promise<IpcResult<MrpackImportResult>>`
+Open a native file picker for a Modrinth `.mrpack` modpack, then install its
+contents. The pack's managed downloads and bundled `overrides/` files are
+written to the Minecraft instance root (derived from the mods folder's parent),
+so mods, resource packs and shaders all land in the right subfolders. Every
+destination path is validated against traversal (`safeResolve`). Returns
+`{ name, installed, failed }` (all empty/zero if cancelled).
+
 ### `openModsDir(): Promise<IpcResult<null>>`
 Open the mods folder in the OS file manager.
 
@@ -155,4 +163,4 @@ All types are defined in [`src/shared/types.ts`](../src/shared/types.ts):
 `Loader`, `ModHit`, `SearchResult`, `SearchParams`, `VersionFile`,
 `ProjectVersion`, `ProjectDetail`, `InstalledMod`, `AppSettings`,
 `InstallRequest`, `InstallProgress`, `InstallResult`, `ModUpdate`, `Pack`,
-`PackEntry`, `PackImportResult`, `IpcResult<T>`.
+`PackEntry`, `PackImportResult`, `MrpackImportResult`, `IpcResult<T>`.

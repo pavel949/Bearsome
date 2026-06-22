@@ -22,6 +22,7 @@ const api: BearsomeApi = {
   updateMod: (filename) => ipcRenderer.invoke(IPC.updateMod, filename),
   exportPack: () => ipcRenderer.invoke(IPC.exportPack),
   importPack: () => ipcRenderer.invoke(IPC.importPack),
+  importMrpack: () => ipcRenderer.invoke(IPC.importMrpack),
   openModsDir: () => ipcRenderer.invoke(IPC.openModsDir),
   openExternal: (url) => ipcRenderer.invoke(IPC.openExternal, url),
   getVersion: () => ipcRenderer.invoke(IPC.getVersion),
