@@ -10,21 +10,58 @@ interface Props {
   settings: WebSettings
   gameVersions: string[]
   onChange: (patch: Partial<WebSettings>) => void
+  fsaSupported: boolean
+  folderName: string | null
+  onPickFolder: () => void
+  onForgetFolder: () => void
 }
 
-export function Settings({ settings, gameVersions, onChange }: Props): JSX.Element {
+export function Settings({
+  settings,
+  gameVersions,
+  onChange,
+  fsaSupported,
+  folderName,
+  onPickFolder,
+  onForgetFolder
+}: Props): JSX.Element {
   return (
     <div className="settings">
       <h2>Settings</h2>
 
       <section className="setting-group">
-        <label className="setting-label">How installing works on the web</label>
-        <p className="setting-help">
-          Clicking <strong>Download</strong> saves the mod's <code>.jar</code> to your browser's
-          downloads folder. Move it into your Minecraft <code>mods</code> folder (or your launcher
-          instance's folder) to install it. When dependencies are enabled, each required mod is
-          downloaded too.
-        </p>
+        <label className="setting-label">Mods folder</label>
+        {fsaSupported ? (
+          <>
+            <p className="setting-help">
+              Choose your Minecraft <code>mods</code> folder (or a launcher instance's folder) once,
+              and Bearsome will write mods — and their required dependencies — straight into it when
+              you click <strong>Install</strong>. Your browser remembers the choice and asks for
+              permission the first time.
+            </p>
+            <div className="folder-row">
+              <input
+                className="input folder-input"
+                readOnly
+                value={folderName ? `📁 ${folderName}` : 'No folder chosen — files download instead'}
+              />
+              <button className="btn btn-ghost" onClick={onPickFolder}>
+                {folderName ? 'Change…' : 'Choose folder…'}
+              </button>
+              {folderName && (
+                <button className="btn btn-ghost" onClick={onForgetFolder}>Forget</button>
+              )}
+            </div>
+          </>
+        ) : (
+          <p className="setting-help">
+            Your browser doesn't support writing directly to a folder, so clicking
+            <strong> Download</strong> saves the mod's <code>.jar</code> to your downloads folder —
+            move it into your Minecraft <code>mods</code> folder to install it. For one-click
+            install into the right folder, use <strong>Chrome or Edge</strong> (or the Bearsome
+            desktop app).
+          </p>
+        )}
       </section>
 
       <section className="setting-group">

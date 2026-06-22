@@ -12,6 +12,7 @@ import type {
   SearchParams,
   SearchResult
 } from './types'
+import { writeFile } from './fsaccess'
 
 const BASE = 'https://api.modrinth.com/v2'
 
@@ -88,18 +89,42 @@ function primaryFile(version: ProjectVersion): { url: string; filename: string }
   return { url: file.url, filename: file.filename }
 }
 
-/** Trigger a browser download of a single version's primary .jar. */
-function downloadFile(url: string, filename: string): void {
+/** Trigger a plain browser download of a single .jar (lands in Downloads). */
+function browserDownload(url: string, filename: string): void {
   const a = document.createElement('a')
   a.href = url
   a.download = filename
-  // download from Modrinth's CDN; opening in a new tab as a fallback ensures
-  // the browser still saves the file even if the download attribute is ignored
-  // for cross-origin URLs.
   a.rel = 'noopener'
   document.body.appendChild(a)
   a.click()
   a.remove()
+}
+
+/**
+ * Save one file. If `dir` is given, fetch the .jar and write it straight into
+ * that folder; otherwise fall back to a normal browser download. Returns true
+ * if it was written into the folder.
+ */
+async function saveFile(
+  url: string,
+  filename: string,
+  dir: FileSystemDirectoryHandle | null | undefined
+): Promise<boolean> {
+  if (dir) {
+    try {
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`Download failed: ${res.status}`)
+      await writeFile(dir, filename, await res.blob())
+      return true
+    } catch {
+      // CORS, permission, or network problem — fall back to a download so the
+      // user still gets the file.
+      browserDownload(url, filename)
+      return false
+    }
+  }
+  browserDownload(url, filename)
+  return false
 }
 
 /**
@@ -138,24 +163,28 @@ async function resolveDependencyVersions(
 }
 
 export interface DownloadResult {
-  /** Filenames that were downloaded (the mod plus any dependencies). */
+  /** Filenames that were saved (the mod plus any dependencies). */
   files: string[]
   /** Names of dependencies that were pulled in automatically. */
   dependencies: string[]
+  /** True if files were written straight into the chosen folder. */
+  wroteToFolder: boolean
 }
 
 /**
- * Download a version (and optionally its required dependencies) by triggering
- * browser downloads for each .jar. Returns the filenames involved.
+ * Save a version (and optionally its required dependencies). If `dir` is
+ * provided, files are written directly into that folder; otherwise they are
+ * downloaded to the browser's downloads folder.
  */
 export async function downloadVersion(
   versionId: string,
   withDependencies: boolean,
-  defaults: { loader?: string; gameVersion?: string }
+  defaults: { loader?: string; gameVersion?: string },
+  dir?: FileSystemDirectoryHandle | null
 ): Promise<DownloadResult> {
   const version = await getVersion(versionId)
   const root = primaryFile(version)
-  downloadFile(root.url, root.filename)
+  let wroteToFolder = await saveFile(root.url, root.filename, dir)
 
   const files = [root.filename]
   const dependencies: string[] = []
@@ -168,11 +197,12 @@ export async function downloadVersion(
     const deps = await resolveDependencyVersions(version, filters)
     for (const dep of deps) {
       const f = primaryFile(dep)
-      downloadFile(f.url, f.filename)
+      const wrote = await saveFile(f.url, f.filename, dir)
+      wroteToFolder = wroteToFolder && wrote
       files.push(f.filename)
       dependencies.push(f.filename)
     }
   }
 
-  return { files, dependencies }
+  return { files, dependencies, wroteToFolder }
 }

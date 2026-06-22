@@ -4,6 +4,7 @@ import { ModCard } from './components/ModCard'
 import { ModDetail } from './components/ModDetail'
 import { Settings, type WebSettings } from './components/Settings'
 import * as api from './api'
+import * as fsa from './fsaccess'
 
 type View = 'browse' | 'settings'
 
@@ -31,6 +32,10 @@ export default function App(): JSX.Element {
   const [view, setView] = useState<View>('browse')
   const [settings, setSettings] = useState<WebSettings>(loadSettings)
   const [gameVersions, setGameVersions] = useState<string[]>([])
+
+  // Mods-folder (File System Access API) state
+  const fsaSupported = fsa.isSupported()
+  const [modsDir, setModsDir] = useState<FileSystemDirectoryHandle | null>(null)
 
   // Search state
   const [query, setQuery] = useState('')
@@ -65,6 +70,21 @@ export default function App(): JSX.Element {
   // --- Initial load -------------------------------------------------------
   useEffect(() => {
     api.getGameVersions().then(setGameVersions).catch(() => {})
+    fsa.restoreSavedDir().then((h) => h && setModsDir(h))
+  }, [])
+
+  // --- Mods folder --------------------------------------------------------
+  const pickFolder = useCallback(async () => {
+    const handle = await fsa.pickDir()
+    if (handle) {
+      setModsDir(handle)
+      flash('ok', `Mods folder set to “${handle.name}”`)
+    }
+  }, [flash])
+
+  const forgetFolder = useCallback(async () => {
+    await fsa.forgetDir()
+    setModsDir(null)
   }, [])
 
   // --- Search -------------------------------------------------------------
@@ -94,12 +114,18 @@ export default function App(): JSX.Element {
   }, [settings.defaultLoader, settings.defaultGameVersion, sort])
 
   // --- Download flows -----------------------------------------------------
-  const afterInstall = useCallback(
-    (titles: string[], deps: string[]) => {
-      const depNote = deps.length ? ` (+ ${deps.length} dependenc${deps.length === 1 ? 'y' : 'ies'})` : ''
-      flash('ok', `Downloaded ${titles.join(', ')}${depNote}`)
+  const reportResult = useCallback(
+    (titles: string[], result: api.DownloadResult) => {
+      const depNote = result.dependencies.length
+        ? ` (+ ${result.dependencies.length} dependenc${result.dependencies.length === 1 ? 'y' : 'ies'})`
+        : ''
+      if (result.wroteToFolder) {
+        flash('ok', `Installed ${titles.join(', ')}${depNote} into “${modsDir?.name}”`)
+      } else {
+        flash('ok', `Downloaded ${titles.join(', ')}${depNote}`)
+      }
     },
-    [flash]
+    [flash, modsDir]
   )
 
   const quickInstall = useCallback(
@@ -114,36 +140,40 @@ export default function App(): JSX.Element {
           flash('err', `${hit.title}: no version found for ${settings.defaultLoader}${settings.defaultGameVersion ? ` ${settings.defaultGameVersion}` : ''}`)
           return
         }
-        const result = await api.downloadVersion(versions[0].id, true, {
-          loader: settings.defaultLoader,
-          gameVersion: settings.defaultGameVersion || undefined
-        })
-        afterInstall([hit.title], result.dependencies)
+        const result = await api.downloadVersion(
+          versions[0].id,
+          true,
+          { loader: settings.defaultLoader, gameVersion: settings.defaultGameVersion || undefined },
+          modsDir
+        )
+        reportResult([hit.title], result)
       } catch (e) {
         flash('err', (e as Error).message)
       } finally {
         setQuickBusy(null)
       }
     },
-    [settings.defaultLoader, settings.defaultGameVersion, flash, afterInstall]
+    [settings.defaultLoader, settings.defaultGameVersion, modsDir, flash, reportResult]
   )
 
   const detailInstall = useCallback(
     async (versionId: string, withDeps: boolean) => {
       setInstallingVersionId(versionId)
       try {
-        const result = await api.downloadVersion(versionId, withDeps, {
-          loader: settings.defaultLoader,
-          gameVersion: settings.defaultGameVersion || undefined
-        })
-        afterInstall([result.files[0] ?? 'mod'], result.dependencies)
+        const result = await api.downloadVersion(
+          versionId,
+          withDeps,
+          { loader: settings.defaultLoader, gameVersion: settings.defaultGameVersion || undefined },
+          modsDir
+        )
+        reportResult([result.files[0] ?? 'mod'], result)
       } catch (e) {
         flash('err', (e as Error).message)
       } finally {
         setInstallingVersionId(null)
       }
     },
-    [settings.defaultLoader, settings.defaultGameVersion, afterInstall, flash]
+    [settings.defaultLoader, settings.defaultGameVersion, modsDir, reportResult, flash]
   )
 
   return (
@@ -163,7 +193,7 @@ export default function App(): JSX.Element {
         </nav>
         <div className="sidebar-foot">
           <div className="loader-badge">{settings.defaultLoader}{settings.defaultGameVersion ? ` · ${settings.defaultGameVersion}` : ''}</div>
-          <span>Powered by Modrinth</span>
+          {modsDir ? <span>📁 {modsDir.name}</span> : <span>Powered by Modrinth</span>}
         </div>
       </aside>
 
@@ -198,6 +228,16 @@ export default function App(): JSX.Element {
               <button className="btn btn-primary" onClick={runSearch}>Search</button>
             </div>
 
+            {fsaSupported && !modsDir && (
+              <div className="folder-banner">
+                <span>
+                  Tip: choose your Minecraft <code>mods</code> folder once and Bearsome will install
+                  mods straight into it.
+                </span>
+                <button className="btn btn-ghost" onClick={pickFolder}>Choose mods folder</button>
+              </div>
+            )}
+
             {searching && <div className="state">Searching…</div>}
             {searchError && <div className="state state-error">{searchError}</div>}
             {!searching && !searchError && hits.length === 0 && (
@@ -212,6 +252,7 @@ export default function App(): JSX.Element {
                   onOpen={(h) => setDetailId(h.slug || h.project_id)}
                   onQuickInstall={quickInstall}
                   busy={quickBusy === hit.project_id}
+                  writesToFolder={!!modsDir}
                 />
               ))}
             </div>
@@ -223,6 +264,10 @@ export default function App(): JSX.Element {
             settings={settings}
             gameVersions={gameVersions}
             onChange={patchSettings}
+            fsaSupported={fsaSupported}
+            folderName={modsDir?.name ?? null}
+            onPickFolder={pickFolder}
+            onForgetFolder={forgetFolder}
           />
         )}
       </main>
@@ -235,6 +280,7 @@ export default function App(): JSX.Element {
           onClose={() => setDetailId(null)}
           onInstall={detailInstall}
           installingVersionId={installingVersionId}
+          writesToFolder={!!modsDir}
         />
       )}
 

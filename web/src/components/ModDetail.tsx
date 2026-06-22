@@ -10,6 +10,7 @@ interface Props {
   onClose: () => void
   onInstall: (versionId: string, withDeps: boolean) => Promise<void>
   installingVersionId: string | null
+  writesToFolder: boolean
 }
 
 export function ModDetail({
@@ -18,7 +19,8 @@ export function ModDetail({
   gameVersion,
   onClose,
   onInstall,
-  installingVersionId
+  installingVersionId,
+  writesToFolder
 }: Props): JSX.Element {
   const [project, setProject] = useState<ProjectDetail | null>(null)
   const [versions, setVersions] = useState<ProjectVersion[]>([])
@@ -134,7 +136,13 @@ export function ModDetail({
                     disabled={installingVersionId !== null}
                     onClick={() => onInstall(v.id, withDeps)}
                   >
-                    {installingVersionId === v.id ? 'Preparing…' : 'Download'}
+                    {installingVersionId === v.id
+                      ? writesToFolder
+                        ? 'Installing…'
+                        : 'Preparing…'
+                      : writesToFolder
+                        ? 'Install'
+                        : 'Download'}
                   </button>
                 </li>
               ))}

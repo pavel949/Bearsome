@@ -624,3 +624,29 @@ nav {
   background: var(--accent);
   transition: width 0.2s;
 }
+
+/* "Choose your mods folder" hint banner on the Browse view (web only). */
+.folder-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 12px 16px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.folder-banner code {
+  color: var(--text);
+  background: var(--bg-elev-2);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.folder-banner .btn {
+  flex-shrink: 0;
+}
