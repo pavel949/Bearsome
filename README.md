@@ -67,8 +67,25 @@ npm run package     # build a distributable installer with electron-builder
 - Bearsome is an unofficial client and is not affiliated with Mojang or
   Modrinth.
 
+## Documentation
+
+Full project documentation lives alongside the code:
+
+| Doc | What's in it |
+| --- | --- |
+| [`PROJECT.md`](./PROJECT.md) | Product vision, scope, personas, principles |
+| [`CLAUDE.md`](./CLAUDE.md) | Guide for AI agents: commands, conventions, gotchas |
+| [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | Processes, data flow, module reference, build |
+| [`docs/IPC_API.md`](./docs/IPC_API.md) | The full `window.bearsome` / IPC reference |
+| [`docs/DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md) | Tokens, components, UI patterns |
+| [`docs/SECURITY.md`](./docs/SECURITY.md) | Sandboxing, CSP, filesystem safety |
+| [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) | Workflow and code conventions |
+| [`docs/ROADMAP.md`](./docs/ROADMAP.md) | What's planned next |
+
 ## Roadmap ideas
 
 - Update checks for installed mods
 - Modpack import/export
 - Additional sources (e.g. CurseForge) and more games behind the same UI
+
+See [`docs/ROADMAP.md`](./docs/ROADMAP.md) for the full roadmap.
