@@ -6,6 +6,10 @@
   "author": "Bearsome",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pavel949/Bearsome.git"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
@@ -52,6 +56,13 @@
     "linux": {
       "target": "AppImage",
       "category": "Game"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "pavel949",
+        "repo": "Bearsome"
+      }
+    ]
   }
 }

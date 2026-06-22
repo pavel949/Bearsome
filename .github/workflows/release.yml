@@ -1,0 +1,50 @@
+name: Release
+
+# Builds the Bearsome desktop app for Windows, macOS, and Linux and
+# publishes the installers (.exe / .dmg / .AppImage) to a GitHub Release.
+#
+# Trigger by pushing a version tag, e.g.:
+#   git tag v0.1.0 && git push origin v0.1.0
+# or run manually from the Actions tab (creates/updates a draft release).
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Build & publish installers
+        env:
+          # Used by electron-builder to upload artifacts to the GitHub Release.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No Apple/Windows signing certs are configured, so build unsigned.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npm run package -- --publish always
