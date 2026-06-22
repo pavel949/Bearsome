@@ -261,6 +261,14 @@ export default function App(): JSX.Element {
     refreshLibrary()
   }, [patchSettings, refreshLibrary])
 
+  // Sets used to flag content the user already has installed.
+  const installedProjectIds = new Set(
+    installed.map((m) => m.projectId).filter((id): id is string => Boolean(id))
+  )
+  const installedVersionIds = new Set(
+    installed.map((m) => m.versionId).filter((id): id is string => Boolean(id))
+  )
+
   if (!settings) {
     return <div className="boot">Starting Bearsome…</div>
   }
@@ -334,6 +342,7 @@ export default function App(): JSX.Element {
                   onOpen={(h) => setDetailId(h.slug || h.project_id)}
                   onQuickInstall={quickInstall}
                   busy={quickBusy === hit.project_id}
+                  installed={installedProjectIds.has(hit.project_id)}
                 />
               ))}
             </div>
@@ -376,6 +385,7 @@ export default function App(): JSX.Element {
           onClose={() => setDetailId(null)}
           onInstall={detailInstall}
           installingVersionId={installingVersionId}
+          installedVersionIds={installedVersionIds}
         />
       )}
 
