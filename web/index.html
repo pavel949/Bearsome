@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Bearsome — search Modrinth and download Minecraft mods from your browser."
+    />
+    <!-- Allow talking to the Modrinth API + CDN, plus their image CDN. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; connect-src 'self' https://api.modrinth.com https://cdn.modrinth.com; img-src 'self' https://cdn.modrinth.com data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <title>Bearsome — Minecraft mods from Modrinth</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
