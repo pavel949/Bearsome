@@ -26,7 +26,7 @@ async function api<T>(path: string): Promise<T> {
 }
 
 /** Build the `facets` query Modrinth expects (a JSON array of OR-groups). */
-function buildFacets(params: SearchParams): string {
+export function buildFacets(params: SearchParams): string {
   const groups: string[][] = [['project_type:mod']]
   if (params.gameVersion) groups.push([`versions:${params.gameVersion}`])
   if (params.loader) groups.push([`categories:${params.loader}`])
