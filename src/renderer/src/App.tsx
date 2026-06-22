@@ -10,6 +10,7 @@ import { ModCard } from './components/ModCard'
 import { ModDetail } from './components/ModDetail'
 import { Library } from './components/Library'
 import { Settings } from './components/Settings'
+import { Logo } from './components/Logo'
 import { unwrap } from './lib'
 
 type View = 'browse' | 'library' | 'settings'
@@ -26,6 +27,7 @@ export default function App(): JSX.Element {
   const [view, setView] = useState<View>('browse')
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [gameVersions, setGameVersions] = useState<string[]>([])
+  const [appVersion, setAppVersion] = useState('')
 
   // Search state
   const [query, setQuery] = useState('')
@@ -57,6 +59,7 @@ export default function App(): JSX.Element {
   useEffect(() => {
     unwrap(window.bearsome.getSettings()).then(setSettings).catch((e: Error) => flash('err', e.message))
     unwrap(window.bearsome.getGameVersions()).then(setGameVersions).catch(() => {})
+    unwrap(window.bearsome.getVersion()).then(setAppVersion).catch(() => {})
   }, [flash])
 
   const refreshLibrary = useCallback(() => {
@@ -318,7 +321,7 @@ export default function App(): JSX.Element {
     <div className="app">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">🐻</span>
+          <Logo size={30} />
           <span className="brand-name">Bearsome</span>
         </div>
         <nav>
@@ -334,7 +337,7 @@ export default function App(): JSX.Element {
         </nav>
         <div className="sidebar-foot">
           <div className="loader-badge">{settings.defaultLoader}{settings.defaultGameVersion ? ` · ${settings.defaultGameVersion}` : ''}</div>
-          <span>Powered by Modrinth</span>
+          <span>Powered by Modrinth{appVersion ? ` · v${appVersion}` : ''}</span>
         </div>
       </aside>
 

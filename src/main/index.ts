@@ -24,6 +24,7 @@ import {
   listJarFiles,
   removeMod
 } from './minecraft'
+import { buildAppMenu } from './menu'
 
 // ---------------------------------------------------------------------------
 // Persistent state
@@ -416,6 +417,7 @@ function registerIpc(): void {
     await shell.openExternal(url as string)
     return null
   })
+  handle(IPC.getVersion, () => app.getVersion())
 }
 
 // ---------------------------------------------------------------------------
@@ -457,6 +459,7 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   registerIpc()
+  buildAppMenu(() => getSettings().modsDir)
   createWindow()
 
   app.on('activate', () => {

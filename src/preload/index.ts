@@ -24,6 +24,7 @@ const api: BearsomeApi = {
   importPack: () => ipcRenderer.invoke(IPC.importPack),
   openModsDir: () => ipcRenderer.invoke(IPC.openModsDir),
   openExternal: (url) => ipcRenderer.invoke(IPC.openExternal, url),
+  getVersion: () => ipcRenderer.invoke(IPC.getVersion),
 
   onInstallProgress: (cb) => {
     const listener = (

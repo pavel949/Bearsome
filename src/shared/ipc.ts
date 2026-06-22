@@ -35,6 +35,7 @@ export const IPC = {
   importPack: 'mods:importPack',
   openModsDir: 'mods:openModsDir',
   openExternal: 'shell:openExternal',
+  getVersion: 'app:getVersion',
   installProgress: 'mods:installProgress'
 } as const
 
@@ -68,6 +69,8 @@ export interface BearsomeApi {
   importPack(): Promise<IpcResult<PackImportResult>>
   openModsDir(): Promise<IpcResult<null>>
   openExternal(url: string): Promise<IpcResult<null>>
+  /** The app's version string (from package.json). */
+  getVersion(): Promise<IpcResult<string>>
 
   /** Subscribe to download progress. Returns an unsubscribe function. */
   onInstallProgress(cb: (p: { filename: string; receivedBytes: number; totalBytes: number }) => void): () => void

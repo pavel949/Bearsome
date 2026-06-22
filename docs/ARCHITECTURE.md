@@ -97,6 +97,9 @@ modules.
   - `GET /version/{id}` (resolve a specific version, incl. dependencies)
   - `GET /tag/game_version` (list release Minecraft versions)
   - Sends a descriptive `User-Agent`; throws on non-2xx with a trimmed body.
+- **`menu.ts`** — builds and installs the native application menu (File / Edit /
+  View / Window / Help), including "Open mods folder", a Modrinth link, and an
+  About dialog.
 - **`minecraft.ts`** — filesystem layer (instance-agnostic; takes `modsDir`):
   - `detectModsDir()` — OS-specific default mods folder.
   - `listJarFiles()` — enumerate `.jar`s with size/mtime (tolerates a missing
@@ -116,6 +119,7 @@ modules.
     chosen version (with a dependencies toggle).
   - `Library.tsx` — installed mods list with remove / open-folder / refresh.
   - `Settings.tsx` — mods folder picker, default loader, default MC version.
+  - `Logo.tsx` — the inline-SVG Bearsome brand mark.
 - **`lib.ts`** — `unwrap(IpcResult)` plus `formatCount` / `formatBytes` /
   `timeAgo` formatters.
 - **`styles.css`** — all styling and the design tokens. See

@@ -125,6 +125,9 @@ Open the mods folder in the OS file manager.
 ### `openExternal(url: string): Promise<IpcResult<null>>`
 Open a URL in the user's default browser (used for Modrinth/source links).
 
+### `getVersion(): Promise<IpcResult<string>>`
+The app's version string (from `package.json`), shown in the sidebar footer.
+
 ---
 
 ## Events
