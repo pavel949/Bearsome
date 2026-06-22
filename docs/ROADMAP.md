@@ -15,20 +15,25 @@ are grouped by horizon, not committed dates.
 - ✅ Auto-detect mods folder; configurable per launcher instance
 - ✅ Live download progress, success/error toasts, persisted settings
 
+- ✅ **"Already installed" awareness in Browse** — search results and detail
+  versions matching the library are flagged "✓ installed"
+- ✅ **Modpack import/export** — save the library to a `.json` Bearsome pack and
+  re-install it on another machine / instance
+- ✅ **Test suite & CI** — vitest unit tests for the pure logic, run with
+  typecheck + build on every PR via GitHub Actions
+
 ## Next (high value, self-contained)
 
-- **"Already installed" awareness in Browse.** Badge search results / detail
-  versions that match something in the library.
 - **Conflict & duplicate detection.** Warn when installing two versions of the
   same project or known-incompatible mods.
-- **Bulk actions** in the Library (update all, remove selected).
+- **Remove selected** (multi-select) bulk action in the Library.
 - **Optional dependencies prompt.** Today only *required* deps are auto-resolved;
   offer optional ones as opt-in checkboxes.
+- **Modrinth `.mrpack` support.** Read/write the standard Modrinth modpack
+  format in addition to Bearsome's own pack JSON.
 
 ## Later (larger)
 
-- **Modpack import/export.** Read/write a manifest of installed mods so a setup
-  can be shared or restored; Modrinth `.mrpack` support.
 - **Profiles / multiple instances** managed inside the app (switch the active
   `modsDir` from a dropdown).
 - **Additional content types.** Resource packs, shaders, datapacks (Modrinth
@@ -41,9 +46,10 @@ are grouped by horizon, not committed dates.
 
 ## Quality / platform
 
-- **Automated tests.** Unit tests for `modrinth.ts` (facet building, parsing)
-  and `minecraft.ts` (path safety, listing); a smoke/e2e harness for the IPC
-  surface.
+- ✅ **Automated tests** — vitest unit tests for `modrinth.ts` (facet building),
+  `minecraft.ts` (path safety, listing) and the renderer formatters, run in CI.
+- **More test coverage** — an e2e/smoke harness exercising the IPC surface and
+  install flow end to end.
 - **App icon & branding assets** under `resources/` for packaging.
 - **Code signing / notarization** for distributable builds.
 - **Auto-update** for the app itself (electron-updater).

@@ -238,6 +238,28 @@ export default function App(): JSX.Element {
     flash('ok', 'Updates complete')
   }, [updates, flash, refreshLibrary])
 
+  // --- Modpack export / import --------------------------------------------
+  const exportPack = useCallback(async () => {
+    try {
+      const path = await unwrap(window.bearsome.exportPack())
+      flash('ok', path ? `Exported pack to ${path}` : 'Export cancelled')
+    } catch (e) {
+      flash('err', (e as Error).message)
+    }
+  }, [flash])
+
+  const importPack = useCallback(async () => {
+    try {
+      const result = await unwrap(window.bearsome.importPack())
+      if (result.installed.length === 0 && result.failed.length === 0) return // cancelled
+      refreshLibrary()
+      const failNote = result.failed.length ? `, ${result.failed.length} failed` : ''
+      flash('ok', `Imported ${result.installed.length} mod${result.installed.length === 1 ? '' : 's'}${failNote}`)
+    } catch (e) {
+      flash('err', (e as Error).message)
+    }
+  }, [flash, refreshLibrary])
+
   // --- Settings mutations -------------------------------------------------
   const patchSettings = useCallback(
     async (patch: Partial<AppSettings>) => {
@@ -362,6 +384,8 @@ export default function App(): JSX.Element {
             onCheckUpdates={checkUpdates}
             onUpdate={updateOne}
             onUpdateAll={updateAll}
+            onExportPack={exportPack}
+            onImportPack={importPack}
             busyFilename={removingFile}
           />
         )}

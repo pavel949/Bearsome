@@ -86,6 +86,9 @@ modules.
     against the latest compatible Modrinth version
     (`latestCompatibleVersion()`); `updateMod()` installs the newer version and
     removes the stale jar.
+  - **Modpack export/import**: `exportPack()` writes the library to a `.json`
+    Bearsome pack via a save dialog; `importPack()` reads one and installs each
+    entry, collecting any failures.
   - Emits `installProgress` events to the renderer during downloads.
 - **`modrinth.ts`** — Modrinth API v2 client. Endpoints used:
   - `GET /search` (with `facets` built from project_type + version + loader)

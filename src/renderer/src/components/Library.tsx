@@ -13,6 +13,8 @@ interface Props {
   onCheckUpdates: () => void
   onUpdate: (filename: string) => void
   onUpdateAll: () => void
+  onExportPack: () => void
+  onImportPack: () => void
   busyFilename: string | null
 }
 
@@ -28,6 +30,8 @@ export function Library({
   onCheckUpdates,
   onUpdate,
   onUpdateAll,
+  onExportPack,
+  onImportPack,
   busyFilename
 }: Props): JSX.Element {
   const updateCount = Object.keys(updates).length
@@ -47,6 +51,10 @@ export function Library({
           )}
           <button className="btn btn-ghost" onClick={onCheckUpdates} disabled={checking || mods.length === 0}>
             {checking ? 'Checking…' : 'Check for updates'}
+          </button>
+          <button className="btn btn-ghost" onClick={onImportPack}>Import pack</button>
+          <button className="btn btn-ghost" onClick={onExportPack} disabled={mods.length === 0}>
+            Export pack
           </button>
           <button className="btn btn-ghost" onClick={onRefresh}>Refresh</button>
           <button className="btn btn-ghost" onClick={onOpenFolder}>Open folder</button>

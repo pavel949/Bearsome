@@ -9,6 +9,7 @@ import type {
   InstalledMod,
   IpcResult,
   ModUpdate,
+  PackImportResult,
   ProjectDetail,
   ProjectVersion,
   SearchParams,
@@ -29,6 +30,8 @@ export const IPC = {
   uninstall: 'mods:uninstall',
   checkUpdates: 'mods:checkUpdates',
   updateMod: 'mods:updateMod',
+  exportPack: 'mods:exportPack',
+  importPack: 'mods:importPack',
   openModsDir: 'mods:openModsDir',
   openExternal: 'shell:openExternal',
   installProgress: 'mods:installProgress'
@@ -56,6 +59,10 @@ export interface BearsomeApi {
   checkUpdates(): Promise<IpcResult<ModUpdate[]>>
   /** Install the latest compatible version for an installed mod, replacing it. */
   updateMod(filename: string): Promise<IpcResult<InstallResult>>
+  /** Export the current library to a `.json` pack. Returns the saved path or null. */
+  exportPack(): Promise<IpcResult<string | null>>
+  /** Pick a `.json` pack and install every mod in it. */
+  importPack(): Promise<IpcResult<PackImportResult>>
   openModsDir(): Promise<IpcResult<null>>
   openExternal(url: string): Promise<IpcResult<null>>
 
