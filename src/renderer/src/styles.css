@@ -530,6 +530,17 @@ nav {
   font-size: 13px;
   margin-top: 2px;
 }
+.installed-tag {
+  background: rgba(74, 222, 128, 0.16);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
 
 /* ------------------------------------------------------------- settings */
 .settings {

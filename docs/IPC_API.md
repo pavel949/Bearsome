@@ -102,6 +102,18 @@ Install the latest compatible version for an installed mod, then remove the old
 `.jar` if the new version has a different filename. Throws `Already up to date.`
 if there's nothing newer. Returns the standard `InstallResult`.
 
+### `exportPack(): Promise<IpcResult<string | null>>`
+Open a native save dialog and write the current library to a `.json` Bearsome
+pack (`{ format, version, name, createdAt, mods: [{projectId, versionId, title}]
+}`). Returns the saved path, or `null` if cancelled. Only mods with tracked
+metadata are included.
+
+### `importPack(): Promise<IpcResult<PackImportResult>>`
+Open a native file picker for a `.json` Bearsome pack, then install every entry
+by its `versionId`. Returns `{ installed: InstalledMod[], failed: string[] }`
+(both empty if cancelled). A single failing entry is recorded in `failed` and
+does not abort the rest.
+
 ### `openModsDir(): Promise<IpcResult<null>>`
 Open the mods folder in the OS file manager.
 
@@ -134,5 +146,5 @@ useEffect(() => {
 All types are defined in [`src/shared/types.ts`](../src/shared/types.ts):
 `Loader`, `ModHit`, `SearchResult`, `SearchParams`, `VersionFile`,
 `ProjectVersion`, `ProjectDetail`, `InstalledMod`, `AppSettings`,
-`InstallRequest`, `InstallProgress`, `InstallResult`, `ModUpdate`,
-`IpcResult<T>`.
+`InstallRequest`, `InstallProgress`, `InstallResult`, `ModUpdate`, `Pack`,
+`PackEntry`, `PackImportResult`, `IpcResult<T>`.

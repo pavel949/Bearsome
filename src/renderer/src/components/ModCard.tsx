@@ -6,9 +6,10 @@ interface Props {
   onOpen: (hit: ModHit) => void
   onQuickInstall: (hit: ModHit) => void
   busy: boolean
+  installed: boolean
 }
 
-export function ModCard({ hit, onOpen, onQuickInstall, busy }: Props): JSX.Element {
+export function ModCard({ hit, onOpen, onQuickInstall, busy, installed }: Props): JSX.Element {
   return (
     <div className="card" onClick={() => onOpen(hit)}>
       <div className="card-top">
@@ -18,7 +19,10 @@ export function ModCard({ hit, onOpen, onQuickInstall, busy }: Props): JSX.Eleme
           <div className="card-icon card-icon--placeholder">{hit.title.charAt(0)}</div>
         )}
         <div className="card-head">
-          <h3 className="card-title">{hit.title}</h3>
+          <h3 className="card-title">
+            {hit.title}
+            {installed && <span className="installed-tag">✓ installed</span>}
+          </h3>
           <span className="card-author">by {hit.author}</span>
         </div>
       </div>
@@ -39,7 +43,7 @@ export function ModCard({ hit, onOpen, onQuickInstall, busy }: Props): JSX.Eleme
             onQuickInstall(hit)
           }}
         >
-          {busy ? 'Installing…' : 'Install'}
+          {busy ? 'Installing…' : installed ? 'Reinstall' : 'Install'}
         </button>
         <button
           className="btn btn-ghost"

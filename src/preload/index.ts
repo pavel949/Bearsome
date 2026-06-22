@@ -19,6 +19,8 @@ const api: BearsomeApi = {
   uninstall: (filename) => ipcRenderer.invoke(IPC.uninstall, filename),
   checkUpdates: () => ipcRenderer.invoke(IPC.checkUpdates),
   updateMod: (filename) => ipcRenderer.invoke(IPC.updateMod, filename),
+  exportPack: () => ipcRenderer.invoke(IPC.exportPack),
+  importPack: () => ipcRenderer.invoke(IPC.importPack),
   openModsDir: () => ipcRenderer.invoke(IPC.openModsDir),
   openExternal: (url) => ipcRenderer.invoke(IPC.openExternal, url),
 

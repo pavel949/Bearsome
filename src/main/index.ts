@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
+import { readFile, writeFile } from 'node:fs/promises'
 import Store from 'electron-store'
 
 import { IPC } from '../shared/ipc'
@@ -10,6 +11,9 @@ import type {
   InstalledMod,
   IpcResult,
   ModUpdate,
+  Pack,
+  PackEntry,
+  PackImportResult,
   ProjectVersion,
   SearchParams
 } from '../shared/types'
@@ -277,6 +281,78 @@ async function updateMod(filename: string): Promise<InstallResult> {
 }
 
 // ---------------------------------------------------------------------------
+// Modpack export / import
+// ---------------------------------------------------------------------------
+
+async function exportPack(): Promise<string | null> {
+  const installed = await listInstalled()
+  const mods: PackEntry[] = installed
+    .filter((m): m is InstalledMod & { projectId: string; versionId: string } =>
+      Boolean(m.projectId && m.versionId)
+    )
+    .map((m) => ({ projectId: m.projectId, versionId: m.versionId, title: m.title ?? m.filename }))
+
+  const pack: Pack = {
+    format: 'bearsome-pack',
+    version: 1,
+    name: 'My Bearsome pack',
+    createdAt: new Date().toISOString(),
+    mods
+  }
+
+  const result = await dialog.showSaveDialog(mainWindow!, {
+    title: 'Export pack',
+    defaultPath: 'bearsome-pack.json',
+    filters: [{ name: 'Bearsome pack', extensions: ['json'] }]
+  })
+  if (result.canceled || !result.filePath) return null
+
+  await writeFile(result.filePath, JSON.stringify(pack, null, 2), 'utf8')
+  return result.filePath
+}
+
+function parsePack(raw: string): Pack {
+  let data: unknown
+  try {
+    data = JSON.parse(raw)
+  } catch {
+    throw new Error('That file is not valid JSON.')
+  }
+  const pack = data as Partial<Pack>
+  if (pack.format !== 'bearsome-pack' || !Array.isArray(pack.mods)) {
+    throw new Error('That file is not a Bearsome pack.')
+  }
+  return pack as Pack
+}
+
+async function importPack(): Promise<PackImportResult> {
+  const open = await dialog.showOpenDialog(mainWindow!, {
+    title: 'Import pack',
+    filters: [{ name: 'Bearsome pack', extensions: ['json'] }],
+    properties: ['openFile']
+  })
+  if (open.canceled || open.filePaths.length === 0) {
+    return { installed: [], failed: [] }
+  }
+
+  const pack = parsePack(await readFile(open.filePaths[0], 'utf8'))
+  const { modsDir } = getSettings()
+  const installed: InstalledMod[] = []
+  const failed: string[] = []
+
+  for (const entry of pack.mods) {
+    try {
+      const version = await modrinth.getVersion(entry.versionId)
+      installed.push(await installVersion(version, modsDir))
+    } catch {
+      failed.push(entry.title || entry.projectId)
+    }
+  }
+
+  return { installed, failed }
+}
+
+// ---------------------------------------------------------------------------
 // Register IPC handlers
 // ---------------------------------------------------------------------------
 
@@ -319,6 +395,8 @@ function registerIpc(): void {
   })
   handle(IPC.checkUpdates, () => checkUpdates())
   handle(IPC.updateMod, (filename) => updateMod(filename as string))
+  handle(IPC.exportPack, () => exportPack())
+  handle(IPC.importPack, () => importPack())
   handle(IPC.openModsDir, async () => {
     const { modsDir } = getSettings()
     await shell.openPath(modsDir)

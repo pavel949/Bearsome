@@ -20,13 +20,14 @@ npm run dev          # launch the app in development with hot reload
 npm run build        # production build into out/ (main, preload, renderer)
 npm run start        # preview a production build
 npm run typecheck    # type-check all three TS projects (node + web)
+npm test             # run the vitest unit suite (test/**/*.test.ts)
 npm run package      # build a distributable installer (electron-builder)
 ```
 
-There is no test runner or linter configured yet. **`npm run typecheck` and
-`npm run build` are the gate** — both must pass before you commit. When a change
-could affect runtime wiring (IPC, preload path, window creation), do a headless
-smoke launch:
+No linter is configured yet. **`npm run typecheck`, `npm test` and `npm run
+build` are the gate** — all must pass before you commit (CI runs the same three
+on every PR via `.github/workflows/ci.yml`). When a change could affect runtime
+wiring (IPC, preload path, window creation), do a headless smoke launch:
 
 ```bash
 npm run build && timeout 30 xvfb-run -a node_modules/.bin/electron out/main/index.js --no-sandbox
