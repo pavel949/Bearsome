@@ -89,6 +89,11 @@ Download and install a version.
 Delete a mod `.jar` by filename and drop its metadata. Returns the new installed
 list. Filenames are validated against path traversal in the main process.
 
+### `uninstallMany(filenames: string[]): Promise<IpcResult<InstalledMod[]>>`
+Remove several mods in one call (used by the Library's multi-select "Remove
+selected"). Each filename is path-traversal validated; metadata is dropped for
+all of them and the updated installed list is returned.
+
 ### `checkUpdates(): Promise<IpcResult<ModUpdate[]>>`
 Check every tracked installed mod for a newer compatible version on Modrinth.
 For each mod it looks up the installed version's loader + Minecraft version and

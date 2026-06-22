@@ -22,11 +22,12 @@ are grouped by horizon, not committed dates.
 - ✅ **Test suite & CI** — vitest unit tests for the pure logic, run with
   typecheck + build on every PR via GitHub Actions
 
+- ✅ **Conflict / duplicate detection** — the Library warns when two files
+  belong to the same mod (a common crash cause) and flags them "duplicate"
+- ✅ **Multi-select bulk remove** — select rows and remove them in one action
+
 ## Next (high value, self-contained)
 
-- **Conflict & duplicate detection.** Warn when installing two versions of the
-  same project or known-incompatible mods.
-- **Remove selected** (multi-select) bulk action in the Library.
 - **Optional dependencies prompt.** Today only *required* deps are auto-resolved;
   offer optional ones as opt-in checkboxes.
 - **Modrinth `.mrpack` support.** Read/write the standard Modrinth modpack

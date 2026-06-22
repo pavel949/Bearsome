@@ -183,6 +183,25 @@ export default function App(): JSX.Element {
     [flash]
   )
 
+  const removeSelected = useCallback(
+    async (filenames: string[]) => {
+      if (filenames.length === 0) return
+      try {
+        const next = await unwrap(window.bearsome.uninstallMany(filenames))
+        setInstalled(next)
+        setUpdates((u) => {
+          const rest = { ...u }
+          for (const f of filenames) delete rest[f]
+          return rest
+        })
+        flash('ok', `Removed ${filenames.length} mod${filenames.length === 1 ? '' : 's'}`)
+      } catch (e) {
+        flash('err', (e as Error).message)
+      }
+    },
+    [flash]
+  )
+
   // --- Update checking ----------------------------------------------------
   const checkUpdates = useCallback(async () => {
     setChecking(true)
@@ -379,6 +398,7 @@ export default function App(): JSX.Element {
             checking={checking}
             updatingFile={updatingFile}
             onUninstall={uninstall}
+            onRemoveSelected={removeSelected}
             onOpenFolder={() => window.bearsome.openModsDir()}
             onRefresh={refreshLibrary}
             onCheckUpdates={checkUpdates}

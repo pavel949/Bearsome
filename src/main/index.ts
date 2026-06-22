@@ -393,6 +393,16 @@ function registerIpc(): void {
     store.set('installedMeta', meta)
     return listInstalled()
   })
+  handle(IPC.uninstallMany, async (filenames) => {
+    const { modsDir } = getSettings()
+    const meta = store.get('installedMeta')
+    for (const filename of filenames as string[]) {
+      await removeMod(modsDir, filename)
+      delete meta[filename]
+    }
+    store.set('installedMeta', meta)
+    return listInstalled()
+  })
   handle(IPC.checkUpdates, () => checkUpdates())
   handle(IPC.updateMod, (filename) => updateMod(filename as string))
   handle(IPC.exportPack, () => exportPack())

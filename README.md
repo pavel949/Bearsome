@@ -23,6 +23,8 @@ your loader, and Bearsome downloads the mod straight into your Minecraft
   pack and re-install it on another machine or instance.
 - ✅ **Installed-aware browsing** — search results and versions you already have
   are clearly flagged.
+- 🧹 **Conflict detection & bulk cleanup** — warns when two files belong to the
+  same mod (a common crash cause) and lets you multi-select and remove mods.
 - 📦 **Library view** — see everything you've installed, with sizes and install
   times, and remove mods you no longer want.
 - 📁 **Works with any launcher** — auto-detects the vanilla `.minecraft/mods`

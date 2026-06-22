@@ -28,6 +28,7 @@ export const IPC = {
   listInstalled: 'mods:listInstalled',
   install: 'mods:install',
   uninstall: 'mods:uninstall',
+  uninstallMany: 'mods:uninstallMany',
   checkUpdates: 'mods:checkUpdates',
   updateMod: 'mods:updateMod',
   exportPack: 'mods:exportPack',
@@ -55,6 +56,8 @@ export interface BearsomeApi {
   listInstalled(): Promise<IpcResult<InstalledMod[]>>
   install(req: InstallRequest): Promise<IpcResult<InstallResult>>
   uninstall(filename: string): Promise<IpcResult<InstalledMod[]>>
+  /** Remove several mods at once. Returns the updated installed list. */
+  uninstallMany(filenames: string[]): Promise<IpcResult<InstalledMod[]>>
   /** Check every installed mod for a newer compatible version on Modrinth. */
   checkUpdates(): Promise<IpcResult<ModUpdate[]>>
   /** Install the latest compatible version for an installed mod, replacing it. */
