@@ -17,6 +17,8 @@ your loader, and Bearsome downloads the mod straight into your Minecraft
   filters and drops the `.jar` into your mods folder.
 - 🧩 **Automatic dependencies** — required dependencies are resolved and
   installed alongside the mod.
+- 🔄 **Update checking** — find installed mods with newer compatible versions on
+  Modrinth and update them individually or all at once.
 - 📦 **Library view** — see everything you've installed, with sizes and install
   times, and remove mods you no longer want.
 - 📁 **Works with any launcher** — auto-detects the vanilla `.minecraft/mods`

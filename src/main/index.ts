@@ -9,6 +9,7 @@ import type {
   InstallResult,
   InstalledMod,
   IpcResult,
+  ModUpdate,
   ProjectVersion,
   SearchParams
 } from '../shared/types'
@@ -194,6 +195,88 @@ async function listInstalled(): Promise<InstalledMod[]> {
 }
 
 // ---------------------------------------------------------------------------
+// Update checking
+// ---------------------------------------------------------------------------
+
+/**
+ * Find the newest version of a project compatible with the same loader and
+ * Minecraft version as the currently-installed version. Returns null if the
+ * project has no other versions for those filters.
+ */
+async function latestCompatibleVersion(
+  projectId: string,
+  current: ProjectVersion
+): Promise<ProjectVersion | null> {
+  const filters = {
+    loader: current.loaders[0],
+    gameVersion: current.game_versions[0]
+  }
+  const versions = await modrinth.getVersions(projectId, filters)
+  if (versions.length === 0) return null
+  // Be defensive about ordering — pick the most recently published.
+  return [...versions].sort(
+    (a, b) => new Date(b.date_published).getTime() - new Date(a.date_published).getTime()
+  )[0]
+}
+
+async function checkUpdates(): Promise<ModUpdate[]> {
+  const installed = await listInstalled()
+  const updates: ModUpdate[] = []
+
+  for (const mod of installed) {
+    if (!mod.projectId || !mod.versionId) continue // can't track unknown jars
+    try {
+      const current = await modrinth.getVersion(mod.versionId)
+      const latest = await latestCompatibleVersion(mod.projectId, current)
+      if (!latest || latest.id === current.id) continue
+      // Only surface it if it's genuinely newer.
+      if (new Date(latest.date_published).getTime() <= new Date(current.date_published).getTime()) {
+        continue
+      }
+      updates.push({
+        filename: mod.filename,
+        projectId: mod.projectId,
+        title: mod.title ?? mod.filename,
+        iconUrl: mod.iconUrl ?? null,
+        currentVersionId: current.id,
+        currentVersionNumber: current.version_number,
+        latestVersionId: latest.id,
+        latestVersionNumber: latest.version_number,
+        latestPublished: latest.date_published
+      })
+    } catch {
+      // A single project failing shouldn't abort the whole check.
+    }
+  }
+  return updates
+}
+
+async function updateMod(filename: string): Promise<InstallResult> {
+  const { modsDir } = getSettings()
+  const meta = store.get('installedMeta')
+  const entry = meta[filename]
+  if (!entry) throw new Error(`No tracked metadata for "${filename}" — can't update it.`)
+
+  const current = await modrinth.getVersion(entry.versionId)
+  const latest = await latestCompatibleVersion(entry.projectId, current)
+  if (!latest || latest.id === current.id) {
+    throw new Error('Already up to date.')
+  }
+
+  const installedMod = await installVersion(latest, modsDir)
+
+  // Remove the old jar if the new version has a different filename.
+  if (installedMod.filename !== filename) {
+    await removeMod(modsDir, filename)
+    const after = store.get('installedMeta')
+    delete after[filename]
+    store.set('installedMeta', after)
+  }
+
+  return { installed: [installedMod], dependencies: [] }
+}
+
+// ---------------------------------------------------------------------------
 // Register IPC handlers
 // ---------------------------------------------------------------------------
 
@@ -234,6 +317,8 @@ function registerIpc(): void {
     store.set('installedMeta', meta)
     return listInstalled()
   })
+  handle(IPC.checkUpdates, () => checkUpdates())
+  handle(IPC.updateMod, (filename) => updateMod(filename as string))
   handle(IPC.openModsDir, async () => {
     const { modsDir } = getSettings()
     await shell.openPath(modsDir)

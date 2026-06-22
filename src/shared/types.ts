@@ -135,5 +135,20 @@ export interface InstallResult {
   dependencies: string[]
 }
 
+/** An available update for an installed mod, as found on Modrinth. */
+export interface ModUpdate {
+  /** The installed file this update applies to. */
+  filename: string
+  projectId: string
+  title: string
+  iconUrl: string | null
+  currentVersionId: string
+  currentVersionNumber: string
+  latestVersionId: string
+  latestVersionNumber: string
+  /** ISO date the newer version was published. */
+  latestPublished: string
+}
+
 /** Generic envelope so the renderer can render errors instead of crashing. */
 export type IpcResult<T> = { ok: true; data: T } | { ok: false; error: string }

@@ -3,7 +3,8 @@ import type {
   AppSettings,
   InstalledMod,
   Loader,
-  ModHit
+  ModHit,
+  ModUpdate
 } from '@shared/types'
 import { ModCard } from './components/ModCard'
 import { ModDetail } from './components/ModDetail'
@@ -35,6 +36,9 @@ export default function App(): JSX.Element {
 
   // Library state
   const [installed, setInstalled] = useState<InstalledMod[]>([])
+  const [updates, setUpdates] = useState<Record<string, ModUpdate>>({})
+  const [checking, setChecking] = useState(false)
+  const [updatingFile, setUpdatingFile] = useState<string | null>(null)
 
   // Detail / install state
   const [detailId, setDetailId] = useState<string | null>(null)
@@ -165,6 +169,10 @@ export default function App(): JSX.Element {
       try {
         const next = await unwrap(window.bearsome.uninstall(filename))
         setInstalled(next)
+        setUpdates((u) => {
+          const { [filename]: _removed, ...rest } = u
+          return rest
+        })
         flash('ok', `Removed ${filename}`)
       } catch (e) {
         flash('err', (e as Error).message)
@@ -174,6 +182,61 @@ export default function App(): JSX.Element {
     },
     [flash]
   )
+
+  // --- Update checking ----------------------------------------------------
+  const checkUpdates = useCallback(async () => {
+    setChecking(true)
+    try {
+      const found = await unwrap(window.bearsome.checkUpdates())
+      const map: Record<string, ModUpdate> = {}
+      for (const u of found) map[u.filename] = u
+      setUpdates(map)
+      flash('ok', found.length ? `${found.length} update${found.length === 1 ? '' : 's'} available` : 'Everything is up to date')
+    } catch (e) {
+      flash('err', (e as Error).message)
+    } finally {
+      setChecking(false)
+    }
+  }, [flash])
+
+  const updateOne = useCallback(
+    async (filename: string) => {
+      setUpdatingFile(filename)
+      try {
+        await unwrap(window.bearsome.updateMod(filename))
+        setUpdates((u) => {
+          const { [filename]: _done, ...rest } = u
+          return rest
+        })
+        refreshLibrary()
+        flash('ok', `Updated ${filename}`)
+      } catch (e) {
+        flash('err', (e as Error).message)
+      } finally {
+        setUpdatingFile(null)
+      }
+    },
+    [flash, refreshLibrary]
+  )
+
+  const updateAll = useCallback(async () => {
+    const filenames = Object.keys(updates)
+    for (const filename of filenames) {
+      setUpdatingFile(filename)
+      try {
+        await unwrap(window.bearsome.updateMod(filename))
+        setUpdates((u) => {
+          const { [filename]: _done, ...rest } = u
+          return rest
+        })
+      } catch (e) {
+        flash('err', `${filename}: ${(e as Error).message}`)
+      }
+    }
+    setUpdatingFile(null)
+    refreshLibrary()
+    flash('ok', 'Updates complete')
+  }, [updates, flash, refreshLibrary])
 
   // --- Settings mutations -------------------------------------------------
   const patchSettings = useCallback(
@@ -281,9 +344,15 @@ export default function App(): JSX.Element {
           <Library
             mods={installed}
             modsDir={settings.modsDir}
+            updates={updates}
+            checking={checking}
+            updatingFile={updatingFile}
             onUninstall={uninstall}
             onOpenFolder={() => window.bearsome.openModsDir()}
             onRefresh={refreshLibrary}
+            onCheckUpdates={checkUpdates}
+            onUpdate={updateOne}
+            onUpdateAll={updateAll}
             busyFilename={removingFile}
           />
         )}

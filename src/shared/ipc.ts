@@ -8,6 +8,7 @@ import type {
   InstallResult,
   InstalledMod,
   IpcResult,
+  ModUpdate,
   ProjectDetail,
   ProjectVersion,
   SearchParams,
@@ -26,6 +27,8 @@ export const IPC = {
   listInstalled: 'mods:listInstalled',
   install: 'mods:install',
   uninstall: 'mods:uninstall',
+  checkUpdates: 'mods:checkUpdates',
+  updateMod: 'mods:updateMod',
   openModsDir: 'mods:openModsDir',
   openExternal: 'shell:openExternal',
   installProgress: 'mods:installProgress'
@@ -49,6 +52,10 @@ export interface BearsomeApi {
   listInstalled(): Promise<IpcResult<InstalledMod[]>>
   install(req: InstallRequest): Promise<IpcResult<InstallResult>>
   uninstall(filename: string): Promise<IpcResult<InstalledMod[]>>
+  /** Check every installed mod for a newer compatible version on Modrinth. */
+  checkUpdates(): Promise<IpcResult<ModUpdate[]>>
+  /** Install the latest compatible version for an installed mod, replacing it. */
+  updateMod(filename: string): Promise<IpcResult<InstallResult>>
   openModsDir(): Promise<IpcResult<null>>
   openExternal(url: string): Promise<IpcResult<null>>
 

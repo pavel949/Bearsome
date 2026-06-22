@@ -510,6 +510,26 @@ nav {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.installed-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.update-badge {
+  background: rgba(74, 222, 128, 0.18);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+.update-note {
+  color: var(--accent);
+  font-size: 13px;
+  margin-top: 2px;
+}
 
 /* ------------------------------------------------------------- settings */
 .settings {

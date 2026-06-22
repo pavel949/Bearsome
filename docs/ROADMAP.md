@@ -10,14 +10,13 @@ are grouped by horizon, not committed dates.
 - ✅ One-click install (latest compatible) and per-version install
 - ✅ Automatic required-dependency resolution
 - ✅ Library: list installed mods, remove, open folder
+- ✅ **Update checking** — compares each installed mod against the latest
+  compatible Modrinth version and offers one-click "Update" / "Update all"
 - ✅ Auto-detect mods folder; configurable per launcher instance
 - ✅ Live download progress, success/error toasts, persisted settings
 
 ## Next (high value, self-contained)
 
-- **Update checking.** Compare installed `versionId`s against the latest
-  compatible Modrinth version and offer one-click updates. (Metadata already
-  stored in `installedMeta`.)
 - **"Already installed" awareness in Browse.** Badge search results / detail
   versions that match something in the library.
 - **Conflict & duplicate detection.** Warn when installing two versions of the

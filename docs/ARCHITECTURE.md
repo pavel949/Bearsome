@@ -82,6 +82,10 @@ modules.
     primary file, enriches it with project metadata, and — if requested —
     resolves required dependencies (`resolveDependencyVersions()`, a BFS over
     `dependencies` with a visited-set to avoid cycles) and installs those too.
+  - **Update checking**: `checkUpdates()` compares each tracked installed mod
+    against the latest compatible Modrinth version
+    (`latestCompatibleVersion()`); `updateMod()` installs the newer version and
+    removes the stale jar.
   - Emits `installProgress` events to the renderer during downloads.
 - **`modrinth.ts`** — Modrinth API v2 client. Endpoints used:
   - `GET /search` (with `facets` built from project_type + version + loader)

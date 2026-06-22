@@ -89,6 +89,19 @@ Download and install a version.
 Delete a mod `.jar` by filename and drop its metadata. Returns the new installed
 list. Filenames are validated against path traversal in the main process.
 
+### `checkUpdates(): Promise<IpcResult<ModUpdate[]>>`
+Check every tracked installed mod for a newer compatible version on Modrinth.
+For each mod it looks up the installed version's loader + Minecraft version and
+finds the most recently published version for those filters; if that version is
+newer than the installed one, it's returned as a `ModUpdate`. Mods with no
+tracked metadata (jars added outside the app) are skipped, and a single project
+failing does not abort the whole check.
+
+### `updateMod(filename: string): Promise<IpcResult<InstallResult>>`
+Install the latest compatible version for an installed mod, then remove the old
+`.jar` if the new version has a different filename. Throws `Already up to date.`
+if there's nothing newer. Returns the standard `InstallResult`.
+
 ### `openModsDir(): Promise<IpcResult<null>>`
 Open the mods folder in the OS file manager.
 
@@ -121,4 +134,5 @@ useEffect(() => {
 All types are defined in [`src/shared/types.ts`](../src/shared/types.ts):
 `Loader`, `ModHit`, `SearchResult`, `SearchParams`, `VersionFile`,
 `ProjectVersion`, `ProjectDetail`, `InstalledMod`, `AppSettings`,
-`InstallRequest`, `InstallProgress`, `InstallResult`, `IpcResult<T>`.
+`InstallRequest`, `InstallProgress`, `InstallResult`, `ModUpdate`,
+`IpcResult<T>`.
