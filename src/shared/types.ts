@@ -150,5 +150,37 @@ export interface ModUpdate {
   latestPublished: string
 }
 
+/** A single entry in an exported Bearsome pack. */
+export interface PackEntry {
+  projectId: string
+  versionId: string
+  title: string
+}
+
+/** The on-disk format of an exported `.json` pack. */
+export interface Pack {
+  format: 'bearsome-pack'
+  version: 1
+  name: string
+  createdAt: string
+  mods: PackEntry[]
+}
+
+/** Outcome of importing a pack. */
+export interface PackImportResult {
+  installed: InstalledMod[]
+  /** Titles (or ids) of entries that could not be installed. */
+  failed: string[]
+}
+
+/** Outcome of importing a Modrinth `.mrpack` modpack. */
+export interface MrpackImportResult {
+  name: string
+  /** Number of files successfully written (mods, resource packs, shaders, …). */
+  installed: number
+  /** Paths of files that could not be downloaded. */
+  failed: string[]
+}
+
 /** Generic envelope so the renderer can render errors instead of crashing. */
 export type IpcResult<T> = { ok: true; data: T } | { ok: false; error: string }

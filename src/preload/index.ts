@@ -17,10 +17,15 @@ const api: BearsomeApi = {
   listInstalled: () => ipcRenderer.invoke(IPC.listInstalled),
   install: (req) => ipcRenderer.invoke(IPC.install, req),
   uninstall: (filename) => ipcRenderer.invoke(IPC.uninstall, filename),
+  uninstallMany: (filenames) => ipcRenderer.invoke(IPC.uninstallMany, filenames),
   checkUpdates: () => ipcRenderer.invoke(IPC.checkUpdates),
   updateMod: (filename) => ipcRenderer.invoke(IPC.updateMod, filename),
+  exportPack: () => ipcRenderer.invoke(IPC.exportPack),
+  importPack: () => ipcRenderer.invoke(IPC.importPack),
+  importMrpack: () => ipcRenderer.invoke(IPC.importMrpack),
   openModsDir: () => ipcRenderer.invoke(IPC.openModsDir),
   openExternal: (url) => ipcRenderer.invoke(IPC.openExternal, url),
+  getVersion: () => ipcRenderer.invoke(IPC.getVersion),
 
   onInstallProgress: (cb) => {
     const listener = (

@@ -19,6 +19,14 @@ your loader, and Bearsome downloads the mod straight into your Minecraft
   installed alongside the mod.
 - 🔄 **Update checking** — find installed mods with newer compatible versions on
   Modrinth and update them individually or all at once.
+- 🎒 **Modpack export/import** — save your whole library to a shareable `.json`
+  pack and re-install it on another machine or instance.
+- 📥 **Modrinth `.mrpack` import** — install standard Modrinth modpacks (mods,
+  resource packs and shaders) straight into your instance.
+- ✅ **Installed-aware browsing** — search results and versions you already have
+  are clearly flagged.
+- 🧹 **Conflict detection & bulk cleanup** — warns when two files belong to the
+  same mod (a common crash cause) and lets you multi-select and remove mods.
 - 📦 **Library view** — see everything you've installed, with sizes and install
   times, and remove mods you no longer want.
 - 📁 **Works with any launcher** — auto-detects the vanilla `.minecraft/mods`
@@ -56,9 +64,13 @@ Other scripts:
 
 ```bash
 npm run typecheck   # type-check main, preload and renderer
+npm test            # run the vitest unit suite
 npm run build       # production build into out/
 npm run package     # build a distributable installer with electron-builder
 ```
+
+Type-check, tests and build also run automatically on every pull request via
+GitHub Actions (`.github/workflows/ci.yml`).
 
 ## Notes & safety
 

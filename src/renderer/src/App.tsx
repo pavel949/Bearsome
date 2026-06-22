@@ -10,6 +10,7 @@ import { ModCard } from './components/ModCard'
 import { ModDetail } from './components/ModDetail'
 import { Library } from './components/Library'
 import { Settings } from './components/Settings'
+import { Logo } from './components/Logo'
 import { unwrap } from './lib'
 
 type View = 'browse' | 'library' | 'settings'
@@ -26,6 +27,7 @@ export default function App(): JSX.Element {
   const [view, setView] = useState<View>('browse')
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [gameVersions, setGameVersions] = useState<string[]>([])
+  const [appVersion, setAppVersion] = useState('')
 
   // Search state
   const [query, setQuery] = useState('')
@@ -57,6 +59,7 @@ export default function App(): JSX.Element {
   useEffect(() => {
     unwrap(window.bearsome.getSettings()).then(setSettings).catch((e: Error) => flash('err', e.message))
     unwrap(window.bearsome.getGameVersions()).then(setGameVersions).catch(() => {})
+    unwrap(window.bearsome.getVersion()).then(setAppVersion).catch(() => {})
   }, [flash])
 
   const refreshLibrary = useCallback(() => {
@@ -183,6 +186,25 @@ export default function App(): JSX.Element {
     [flash]
   )
 
+  const removeSelected = useCallback(
+    async (filenames: string[]) => {
+      if (filenames.length === 0) return
+      try {
+        const next = await unwrap(window.bearsome.uninstallMany(filenames))
+        setInstalled(next)
+        setUpdates((u) => {
+          const rest = { ...u }
+          for (const f of filenames) delete rest[f]
+          return rest
+        })
+        flash('ok', `Removed ${filenames.length} mod${filenames.length === 1 ? '' : 's'}`)
+      } catch (e) {
+        flash('err', (e as Error).message)
+      }
+    },
+    [flash]
+  )
+
   // --- Update checking ----------------------------------------------------
   const checkUpdates = useCallback(async () => {
     setChecking(true)
@@ -238,6 +260,40 @@ export default function App(): JSX.Element {
     flash('ok', 'Updates complete')
   }, [updates, flash, refreshLibrary])
 
+  // --- Modpack export / import --------------------------------------------
+  const exportPack = useCallback(async () => {
+    try {
+      const path = await unwrap(window.bearsome.exportPack())
+      flash('ok', path ? `Exported pack to ${path}` : 'Export cancelled')
+    } catch (e) {
+      flash('err', (e as Error).message)
+    }
+  }, [flash])
+
+  const importPack = useCallback(async () => {
+    try {
+      const result = await unwrap(window.bearsome.importPack())
+      if (result.installed.length === 0 && result.failed.length === 0) return // cancelled
+      refreshLibrary()
+      const failNote = result.failed.length ? `, ${result.failed.length} failed` : ''
+      flash('ok', `Imported ${result.installed.length} mod${result.installed.length === 1 ? '' : 's'}${failNote}`)
+    } catch (e) {
+      flash('err', (e as Error).message)
+    }
+  }, [flash, refreshLibrary])
+
+  const importMrpack = useCallback(async () => {
+    try {
+      const result = await unwrap(window.bearsome.importMrpack())
+      if (result.installed === 0 && result.failed.length === 0) return // cancelled
+      refreshLibrary()
+      const failNote = result.failed.length ? `, ${result.failed.length} failed` : ''
+      flash('ok', `Imported "${result.name}": ${result.installed} file${result.installed === 1 ? '' : 's'}${failNote}`)
+    } catch (e) {
+      flash('err', (e as Error).message)
+    }
+  }, [flash, refreshLibrary])
+
   // --- Settings mutations -------------------------------------------------
   const patchSettings = useCallback(
     async (patch: Partial<AppSettings>) => {
@@ -261,6 +317,14 @@ export default function App(): JSX.Element {
     refreshLibrary()
   }, [patchSettings, refreshLibrary])
 
+  // Sets used to flag content the user already has installed.
+  const installedProjectIds = new Set(
+    installed.map((m) => m.projectId).filter((id): id is string => Boolean(id))
+  )
+  const installedVersionIds = new Set(
+    installed.map((m) => m.versionId).filter((id): id is string => Boolean(id))
+  )
+
   if (!settings) {
     return <div className="boot">Starting Bearsome…</div>
   }
@@ -269,7 +333,7 @@ export default function App(): JSX.Element {
     <div className="app">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">🐻</span>
+          <Logo size={30} />
           <span className="brand-name">Bearsome</span>
         </div>
         <nav>
@@ -285,7 +349,7 @@ export default function App(): JSX.Element {
         </nav>
         <div className="sidebar-foot">
           <div className="loader-badge">{settings.defaultLoader}{settings.defaultGameVersion ? ` · ${settings.defaultGameVersion}` : ''}</div>
-          <span>Powered by Modrinth</span>
+          <span>Powered by Modrinth{appVersion ? ` · v${appVersion}` : ''}</span>
         </div>
       </aside>
 
@@ -334,6 +398,7 @@ export default function App(): JSX.Element {
                   onOpen={(h) => setDetailId(h.slug || h.project_id)}
                   onQuickInstall={quickInstall}
                   busy={quickBusy === hit.project_id}
+                  installed={installedProjectIds.has(hit.project_id)}
                 />
               ))}
             </div>
@@ -348,11 +413,15 @@ export default function App(): JSX.Element {
             checking={checking}
             updatingFile={updatingFile}
             onUninstall={uninstall}
+            onRemoveSelected={removeSelected}
             onOpenFolder={() => window.bearsome.openModsDir()}
             onRefresh={refreshLibrary}
             onCheckUpdates={checkUpdates}
             onUpdate={updateOne}
             onUpdateAll={updateAll}
+            onExportPack={exportPack}
+            onImportPack={importPack}
+            onImportMrpack={importMrpack}
             busyFilename={removingFile}
           />
         )}
@@ -376,6 +445,7 @@ export default function App(): JSX.Element {
           onClose={() => setDetailId(null)}
           onInstall={detailInstall}
           installingVersionId={installingVersionId}
+          installedVersionIds={installedVersionIds}
         />
       )}
 

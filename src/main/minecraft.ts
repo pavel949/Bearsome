@@ -8,7 +8,7 @@ import { mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { homedir, platform } from 'node:os'
-import { join } from 'node:path'
+import { dirname, isAbsolute, join, normalize, resolve, sep } from 'node:path'
 
 /**
  * Best-effort guess of the default vanilla `.minecraft/mods` directory for
@@ -59,21 +59,38 @@ export async function listJarFiles(
 }
 
 /**
- * Stream-download a URL to disk inside `modsDir`. Reports progress via the
- * callback. Returns the absolute path and byte size of the written file.
+ * Resolve a relative path inside a base directory, refusing anything that would
+ * escape it (absolute paths, `..` traversal). Returns the safe absolute path.
+ * Used when writing files whose paths come from untrusted sources (e.g. a
+ * `.mrpack` index).
  */
-export async function downloadToMods(
-  modsDir: string,
+export function safeResolve(base: string, relPath: string): string {
+  const cleaned = normalize(relPath).replace(/\\/g, '/')
+  if (isAbsolute(relPath) || isAbsolute(cleaned) || cleaned.split('/').includes('..')) {
+    throw new Error(`Unsafe path in pack: ${relPath}`)
+  }
+  const baseResolved = resolve(base)
+  const target = resolve(baseResolved, cleaned)
+  if (target !== baseResolved && !target.startsWith(baseResolved + sep)) {
+    throw new Error(`Unsafe path in pack: ${relPath}`)
+  }
+  return target
+}
+
+/**
+ * Stream-download a URL to an absolute destination path, creating parent
+ * directories as needed. Reports progress via the callback. Returns byte size.
+ */
+export async function downloadToPath(
   url: string,
-  filename: string,
+  dest: string,
   onProgress?: (receivedBytes: number, totalBytes: number) => void
-): Promise<{ path: string; sizeBytes: number }> {
-  await ensureDir(modsDir)
-  const dest = join(modsDir, filename)
+): Promise<number> {
+  await mkdir(dirname(dest), { recursive: true })
 
   const res = await fetch(url, { headers: { 'User-Agent': 'bearsome/0.1.0' } })
   if (!res.ok || !res.body) {
-    throw new Error(`Failed to download ${filename}: ${res.status} ${res.statusText}`)
+    throw new Error(`Failed to download ${url}: ${res.status} ${res.statusText}`)
   }
 
   const totalBytes = Number(res.headers.get('content-length') ?? 0)
@@ -88,8 +105,21 @@ export async function downloadToMods(
 
   await pipeline(nodeStream, createWriteStream(dest))
 
-  const s = await stat(dest)
-  return { path: dest, sizeBytes: s.size }
+  return (await stat(dest)).size
+}
+
+/**
+ * Stream-download a URL into `modsDir`. Returns the absolute path and size.
+ */
+export async function downloadToMods(
+  modsDir: string,
+  url: string,
+  filename: string,
+  onProgress?: (receivedBytes: number, totalBytes: number) => void
+): Promise<{ path: string; sizeBytes: number }> {
+  const dest = join(modsDir, filename)
+  const sizeBytes = await downloadToPath(url, dest, onProgress)
+  return { path: dest, sizeBytes }
 }
 
 /** Delete a single mod file by name from the mods directory. */

@@ -9,6 +9,8 @@ import type {
   InstalledMod,
   IpcResult,
   ModUpdate,
+  MrpackImportResult,
+  PackImportResult,
   ProjectDetail,
   ProjectVersion,
   SearchParams,
@@ -27,10 +29,15 @@ export const IPC = {
   listInstalled: 'mods:listInstalled',
   install: 'mods:install',
   uninstall: 'mods:uninstall',
+  uninstallMany: 'mods:uninstallMany',
   checkUpdates: 'mods:checkUpdates',
   updateMod: 'mods:updateMod',
+  exportPack: 'mods:exportPack',
+  importPack: 'mods:importPack',
+  importMrpack: 'mods:importMrpack',
   openModsDir: 'mods:openModsDir',
   openExternal: 'shell:openExternal',
+  getVersion: 'app:getVersion',
   installProgress: 'mods:installProgress'
 } as const
 
@@ -52,12 +59,22 @@ export interface BearsomeApi {
   listInstalled(): Promise<IpcResult<InstalledMod[]>>
   install(req: InstallRequest): Promise<IpcResult<InstallResult>>
   uninstall(filename: string): Promise<IpcResult<InstalledMod[]>>
+  /** Remove several mods at once. Returns the updated installed list. */
+  uninstallMany(filenames: string[]): Promise<IpcResult<InstalledMod[]>>
   /** Check every installed mod for a newer compatible version on Modrinth. */
   checkUpdates(): Promise<IpcResult<ModUpdate[]>>
   /** Install the latest compatible version for an installed mod, replacing it. */
   updateMod(filename: string): Promise<IpcResult<InstallResult>>
+  /** Export the current library to a `.json` pack. Returns the saved path or null. */
+  exportPack(): Promise<IpcResult<string | null>>
+  /** Pick a `.json` pack and install every mod in it. */
+  importPack(): Promise<IpcResult<PackImportResult>>
+  /** Pick a Modrinth `.mrpack` modpack and install its contents. */
+  importMrpack(): Promise<IpcResult<MrpackImportResult>>
   openModsDir(): Promise<IpcResult<null>>
   openExternal(url: string): Promise<IpcResult<null>>
+  /** The app's version string (from package.json). */
+  getVersion(): Promise<IpcResult<string>>
 
   /** Subscribe to download progress. Returns an unsubscribe function. */
   onInstallProgress(cb: (p: { filename: string; receivedBytes: number; totalBytes: number }) => void): () => void

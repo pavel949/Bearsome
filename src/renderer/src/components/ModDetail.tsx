@@ -9,6 +9,7 @@ interface Props {
   onClose: () => void
   onInstall: (versionId: string, withDeps: boolean) => Promise<void>
   installingVersionId: string | null
+  installedVersionIds: Set<string>
 }
 
 export function ModDetail({
@@ -17,7 +18,8 @@ export function ModDetail({
   gameVersion,
   onClose,
   onInstall,
-  installingVersionId
+  installingVersionId,
+  installedVersionIds
 }: Props): JSX.Element {
   const [project, setProject] = useState<ProjectDetail | null>(null)
   const [versions, setVersions] = useState<ProjectVersion[]>([])
@@ -120,25 +122,33 @@ export function ModDetail({
             )}
 
             <ul className="version-list">
-              {versions.slice(0, 25).map((v) => (
-                <li key={v.id} className="version-row">
-                  <div className="version-info">
-                    <span className={`badge badge-${v.version_type}`}>{v.version_type}</span>
-                    <span className="version-name">{v.version_number}</span>
-                    <span className="version-meta">
-                      {v.game_versions.slice(0, 3).join(', ')}
-                      {v.game_versions.length > 3 ? '…' : ''} · {v.loaders.join(', ')}
-                    </span>
-                  </div>
-                  <button
-                    className="btn btn-primary"
-                    disabled={installingVersionId !== null}
-                    onClick={() => onInstall(v.id, withDeps)}
-                  >
-                    {installingVersionId === v.id ? 'Installing…' : 'Install'}
-                  </button>
-                </li>
-              ))}
+              {versions.slice(0, 25).map((v) => {
+                const isInstalled = installedVersionIds.has(v.id)
+                return (
+                  <li key={v.id} className="version-row">
+                    <div className="version-info">
+                      <span className={`badge badge-${v.version_type}`}>{v.version_type}</span>
+                      <span className="version-name">{v.version_number}</span>
+                      {isInstalled && <span className="installed-tag">✓ installed</span>}
+                      <span className="version-meta">
+                        {v.game_versions.slice(0, 3).join(', ')}
+                        {v.game_versions.length > 3 ? '…' : ''} · {v.loaders.join(', ')}
+                      </span>
+                    </div>
+                    <button
+                      className={isInstalled ? 'btn btn-ghost' : 'btn btn-primary'}
+                      disabled={installingVersionId !== null}
+                      onClick={() => onInstall(v.id, withDeps)}
+                    >
+                      {installingVersionId === v.id
+                        ? 'Installing…'
+                        : isInstalled
+                          ? 'Reinstall'
+                          : 'Install'}
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
           </>
         )}

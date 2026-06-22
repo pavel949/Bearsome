@@ -89,6 +89,11 @@ Download and install a version.
 Delete a mod `.jar` by filename and drop its metadata. Returns the new installed
 list. Filenames are validated against path traversal in the main process.
 
+### `uninstallMany(filenames: string[]): Promise<IpcResult<InstalledMod[]>>`
+Remove several mods in one call (used by the Library's multi-select "Remove
+selected"). Each filename is path-traversal validated; metadata is dropped for
+all of them and the updated installed list is returned.
+
 ### `checkUpdates(): Promise<IpcResult<ModUpdate[]>>`
 Check every tracked installed mod for a newer compatible version on Modrinth.
 For each mod it looks up the installed version's loader + Minecraft version and
@@ -102,11 +107,34 @@ Install the latest compatible version for an installed mod, then remove the old
 `.jar` if the new version has a different filename. Throws `Already up to date.`
 if there's nothing newer. Returns the standard `InstallResult`.
 
+### `exportPack(): Promise<IpcResult<string | null>>`
+Open a native save dialog and write the current library to a `.json` Bearsome
+pack (`{ format, version, name, createdAt, mods: [{projectId, versionId, title}]
+}`). Returns the saved path, or `null` if cancelled. Only mods with tracked
+metadata are included.
+
+### `importPack(): Promise<IpcResult<PackImportResult>>`
+Open a native file picker for a `.json` Bearsome pack, then install every entry
+by its `versionId`. Returns `{ installed: InstalledMod[], failed: string[] }`
+(both empty if cancelled). A single failing entry is recorded in `failed` and
+does not abort the rest.
+
+### `importMrpack(): Promise<IpcResult<MrpackImportResult>>`
+Open a native file picker for a Modrinth `.mrpack` modpack, then install its
+contents. The pack's managed downloads and bundled `overrides/` files are
+written to the Minecraft instance root (derived from the mods folder's parent),
+so mods, resource packs and shaders all land in the right subfolders. Every
+destination path is validated against traversal (`safeResolve`). Returns
+`{ name, installed, failed }` (all empty/zero if cancelled).
+
 ### `openModsDir(): Promise<IpcResult<null>>`
 Open the mods folder in the OS file manager.
 
 ### `openExternal(url: string): Promise<IpcResult<null>>`
 Open a URL in the user's default browser (used for Modrinth/source links).
+
+### `getVersion(): Promise<IpcResult<string>>`
+The app's version string (from `package.json`), shown in the sidebar footer.
 
 ---
 
@@ -134,5 +162,5 @@ useEffect(() => {
 All types are defined in [`src/shared/types.ts`](../src/shared/types.ts):
 `Loader`, `ModHit`, `SearchResult`, `SearchParams`, `VersionFile`,
 `ProjectVersion`, `ProjectDetail`, `InstalledMod`, `AppSettings`,
-`InstallRequest`, `InstallProgress`, `InstallResult`, `ModUpdate`,
-`IpcResult<T>`.
+`InstallRequest`, `InstallProgress`, `InstallResult`, `ModUpdate`, `Pack`,
+`PackEntry`, `PackImportResult`, `MrpackImportResult`, `IpcResult<T>`.

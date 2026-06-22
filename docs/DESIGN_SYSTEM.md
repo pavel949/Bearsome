@@ -72,6 +72,9 @@ Defined on `:root`:
 | Version row | `.version-row`, `.version-info`, `.badge` (`.badge-release/-beta/-alpha`) | Release = green, beta = amber, alpha = red. |
 | Chips | `.chip` | Category tags. |
 | Library row | `.installed-row`, `.installed-icon`, `.installed-info` | Title, filename·size·time, remove button. |
+| Warning banner | `.warning-banner` | Amber inline alert (e.g. duplicate-mod warning). |
+| Duplicate badge | `.dupe-badge` | Amber "duplicate" tag; row gets `.installed-row--dupe`. |
+| Row checkbox | `.row-check` | Multi-select control (accent-colored). |
 | Toast | `.toast` + `.toast-ok` / `.toast-err` | Bottom-center, auto-dismiss (~4s). |
 | Progress | `.progress-toast`, `.progress-track`, `.progress-fill` | Bottom-right download indicator. |
 | State blocks | `.state`, `.state-error` | Empty/loading/error placeholders. |

@@ -86,6 +86,9 @@ modules.
     against the latest compatible Modrinth version
     (`latestCompatibleVersion()`); `updateMod()` installs the newer version and
     removes the stale jar.
+  - **Modpack export/import**: `exportPack()` writes the library to a `.json`
+    Bearsome pack via a save dialog; `importPack()` reads one and installs each
+    entry, collecting any failures.
   - Emits `installProgress` events to the renderer during downloads.
 - **`modrinth.ts`** — Modrinth API v2 client. Endpoints used:
   - `GET /search` (with `facets` built from project_type + version + loader)
@@ -94,12 +97,21 @@ modules.
   - `GET /version/{id}` (resolve a specific version, incl. dependencies)
   - `GET /tag/game_version` (list release Minecraft versions)
   - Sends a descriptive `User-Agent`; throws on non-2xx with a trimmed body.
+- **`menu.ts`** — builds and installs the native application menu (File / Edit /
+  View / Window / Help), including "Open mods folder", a Modrinth link, and an
+  About dialog.
+- **`mrpack.ts`** — pure parser/validator for the Modrinth `.mrpack` index
+  (`parseMrpackIndex`); the ZIP reading + downloading orchestration lives in
+  `index.ts` (`importMrpack`).
 - **`minecraft.ts`** — filesystem layer (instance-agnostic; takes `modsDir`):
   - `detectModsDir()` — OS-specific default mods folder.
   - `listJarFiles()` — enumerate `.jar`s with size/mtime (tolerates a missing
     folder).
   - `downloadToMods()` — streams a URL to disk with progress via
     `Readable.fromWeb` + `stream/promises.pipeline`.
+  - `downloadToPath()` / `safeResolve()` — generic stream-download to an
+    absolute path, and a traversal-safe resolver used when writing files whose
+    paths come from untrusted sources (e.g. a `.mrpack` index).
   - `removeMod()` — deletes a single file, guarding against path traversal.
 
 ### `src/renderer/src`
@@ -113,6 +125,7 @@ modules.
     chosen version (with a dependencies toggle).
   - `Library.tsx` — installed mods list with remove / open-folder / refresh.
   - `Settings.tsx` — mods folder picker, default loader, default MC version.
+  - `Logo.tsx` — the inline-SVG Bearsome brand mark.
 - **`lib.ts`** — `unwrap(IpcResult)` plus `formatCount` / `formatBytes` /
   `timeAgo` formatters.
 - **`styles.css`** — all styling and the design tokens. See
